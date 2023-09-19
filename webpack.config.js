@@ -8,6 +8,7 @@ const { ESBuildMinifyPlugin } = require('esbuild-loader');
 const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin');
 const darkVars = require('./scripts/dark-vars');
 const compactVars = require('./scripts/compact-vars');
+const fs = require('fs');
 
 const { webpack } = getWebpackConfig;
 
@@ -153,6 +154,20 @@ if (process.env.RUN_ENV === 'PRODUCTION') {
   processWebpackThemeConfig(webpackCompactConfig, 'compact', compactVars);
   processWebpackThemeConfig(webpackVariableConfig, 'variable', {});
 }
+function replacer(key, value) {
+  if (value instanceof RegExp) {
+    return value.toString();
+  }
+  return value;
+}
+fs.writeFile(
+  './webpack-config.json',
+  JSON.stringify(
+    [...webpackConfig, ...webpackDarkConfig, ...webpackCompactConfig, ...webpackVariableConfig],
+    replacer,
+  ),
+  () => {},
+);
 
 module.exports = [
   ...webpackConfig,
